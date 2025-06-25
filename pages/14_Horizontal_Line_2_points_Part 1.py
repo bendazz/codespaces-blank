@@ -14,62 +14,68 @@ b_slider = st.slider("Choose $b$ (slider, coarse)", min_value=-5.0, max_value=20
 # Number input for fine adjustments, initialized to slider value
 b = st.number_input("Fine-tune $b$ (number input, fine)", min_value=-5.0, max_value=20.0, value=float(b_slider), step=0.01, format="%.2f")
 
-# Plot
-fig, ax = plt.subplots()
-x_vals = np.linspace(0, 10, 100)
-y_vals = np.ones_like(x_vals) * b
-ax.plot(x_vals, y_vals, label=f"$y = {b}$", color="blue")
-ax.scatter([point1[0], point2[0]], [point1[1], point2[1]], color="red", zorder=5, label="Points")
+squared_error1 = (b - point1[1])**2
+squared_error2 = (b - point2[1])**2
+mse = (squared_error1 + squared_error2) / 2
 
-# Points on the horizontal line aligned with the red points
-ax.scatter([point1[0], point2[0]], [b, b], color="blue", marker="o", zorder=6, label="Projection on $y=b$")
+# --- Two plots side by side ---
+col1, col2 = st.columns(2)
 
-# Label each red point with its coordinates
-ax.text(point1[0]+0.1, point1[1], f"({point1[0]}, {point1[1]})", color="red", va="bottom")
-ax.text(point2[0]+0.1, point2[1], f"({point2[0]}, {point2[1]})", color="red", va="bottom")
+with col1:
+    fig, ax = plt.subplots()
+    x_vals = np.linspace(0, 10, 100)
+    y_vals = np.ones_like(x_vals) * b
+    ax.plot(x_vals, y_vals, label=f"$y = {b}$", color="blue")
+    ax.scatter([point1[0], point2[0]], [point1[1], point2[1]], color="red", zorder=5, label="Points")
+    ax.scatter([point1[0], point2[0]], [b, b], color="blue", marker="o", zorder=6, label="Projection on $y=b$")
+    ax.text(point1[0]+0.1, point1[1], f"({point1[0]}, {point1[1]})", color="red", va="bottom")
+    ax.text(point2[0]+0.1, point2[1], f"({point2[0]}, {point2[1]})", color="red", va="bottom")
+    ax.text(point1[0]+0.1, b, f"({point1[0]}, {b:.2f})", color="blue", va="bottom")
+    ax.text(point2[0]+0.1, b, f"({point2[0]}, {b:.2f})", color="blue", va="bottom")
+    ax.plot([point1[0], point1[0]], [point1[1], b], color="gray", linestyle="dotted")
+    ax.plot([point2[0], point2[0]], [point2[1], b], color="gray", linestyle="dotted")
+    diff1 = b - point1[1]
+    diff2 = b - point2[1]
+    ax.text(point1[0]+0.15, (point1[1]+b)/2, f"{diff1:+.2f}", color="gray", va="center", ha="left", fontsize=10, backgroundcolor="white")
+    ax.text(point2[0]+0.15, (point2[1]+b)/2, f"{diff2:+.2f}", color="gray", va="center", ha="left", fontsize=10, backgroundcolor="white")
+    ax.set_xlim(0, 10)
+    ax.set_ylim(-5, 20)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.legend(loc="upper left")
+    st.pyplot(fig)
 
-# Label each blue point (projection) with its coordinates
-ax.text(point1[0]+0.1, b, f"({point1[0]}, {b:.2f})", color="blue", va="bottom")
-ax.text(point2[0]+0.1, b, f"({point2[0]}, {b:.2f})", color="blue", va="bottom")
+with col2:
+    # Plot MSE vs b for a range of b values
+    b_vals = np.linspace(-5, 20, 400)
+    mse_vals = [((b_test - point1[1])**2 + (b_test - point2[1])**2)/2 for b_test in b_vals]
+    fig_mse, ax_mse = plt.subplots()
+    ax_mse.plot(b_vals, mse_vals, color="purple")
+    # Add a point at the current (b, mse)
+    ax_mse.scatter([b], [mse], color="red", zorder=5, label="Current $(b, \mathrm{MSE})$")
+    ax_mse.set_xlabel("b")
+    ax_mse.set_ylabel("MSE")
+    ax_mse.set_title("MSE vs b")
+    ax_mse.legend()
 
-# Dotted lines from each point to the horizontal line
-ax.plot([point1[0], point1[0]], [point1[1], b], color="gray", linestyle="dotted")
-ax.plot([point2[0], point2[0]], [point2[1], b], color="gray", linestyle="dotted")
+    st.pyplot(fig_mse)
 
-# Label the dotted lines with their signed length
-diff1 = b - point1[1]
-diff2 = b - point2[1]
-ax.text(point1[0]+0.15, (point1[1]+b)/2, f"{diff1:+.2f}", color="gray", va="center", ha="left", fontsize=10, backgroundcolor="white")
-ax.text(point2[0]+0.15, (point2[1]+b)/2, f"{diff2:+.2f}", color="gray", va="center", ha="left", fontsize=10, backgroundcolor="white")
-
-ax.set_xlim(0, 10)
-ax.set_ylim(-5, 20)
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.legend(loc="upper left")
-st.pyplot(fig)
-
-# Calculate and display mean squared error with explanation
+# --- MSE Calculation Display ---
 squared_error1 = (b - point1[1])**2
 squared_error2 = (b - point2[1])**2
 mse = (squared_error1 + squared_error2) / 2
 
 st.markdown("**Mean Squared Error (MSE) Calculation:**")
-
 st.latex(r"\text{MSE} = \frac{(b - y_1)^2 + (b - y_2)^2}{2}")
-
 st.latex(
     rf"\text{{MSE}} = \frac{{({b:.2f} - {point1[1]})^2 + ({b:.2f} - {point2[1]})^2}}{{2}}"
 )
-
 st.latex(
     rf"\text{{MSE}} = \frac{{({b - point1[1]:.2f})^2 + ({b - point2[1]:.2f})^2}}{{2}}"
 )
-
 st.latex(
     rf"\text{{MSE}} = \frac{{{squared_error1:.2f} + {squared_error2:.2f}}}{{2}}"
 )
-
 st.latex(
     rf"\text{{MSE}} = {mse:.2f}"
 )
@@ -149,3 +155,6 @@ with st.expander("Solution"):
                &= \frac{20}{2} = 10
     \end{align*}
     """)
+
+st.markdown("---")
+
