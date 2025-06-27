@@ -444,6 +444,91 @@ with col2d_g:
         st.latex(rf"\frac{{dz}}{{dx}} = -\frac{{x}}{{{sigma:.2f}^2}} z")
         st.latex(rf"\left.\frac{{dz}}{{dx}}\right|_{{x={x0g:.2f}}} = -\frac{{{x0g:.2f}}}{{{sigma:.2f}^2}} \times {z0g:.3f} = {dz_dx_g:.3f}")
 
+
+st.subheader("Using SymPy to Compute Partial Derivatives")
+
+st.markdown(
+    r"""
+You can use the `sympy` library to compute partial derivatives symbolically and evaluate them at specific points.
+Let's see how this works for both the paraboloid and the Gaussian bump.
+"""
+)
+
+import sympy as sp
+
+# Paraboloid example
+st.markdown("**Example 1: Paraboloid $z = x^2 + y^2$**")
+
+st.code(
+    '''import sympy as sp
+
+x, y = sp.symbols('x y')
+z = x**2 + y**2
+
+dz_dx = sp.diff(z, x)
+dz_dy = sp.diff(z, y)
+
+# Evaluate at (x, y) = (2, 3)
+dz_dx_val = dz_dx.subs({x: 2, y: 3})
+dz_dy_val = dz_dy.subs({x: 2, y: 3})
+''', language="python"
+)
+
+x_sym, y_sym = sp.symbols('x y')
+z_parab = x_sym**2 + y_sym**2
+dz_dx_parab = sp.diff(z_parab, x_sym)
+dz_dy_parab = sp.diff(z_parab, y_sym)
+x_val, y_val = 2, 3
+dz_dx_val = dz_dx_parab.subs({x_sym: x_val, y_sym: y_val})
+dz_dy_val = dz_dy_parab.subs({x_sym: x_val, y_sym: y_val})
+
+st.latex(r"z = x^2 + y^2")
+st.latex(r"\frac{\partial z}{\partial x} = " + sp.latex(dz_dx_parab))
+st.latex(r"\frac{\partial z}{\partial y} = " + sp.latex(dz_dy_parab))
+st.markdown(f"At $x={x_val}$, $y={y_val}$:")
+st.latex(rf"\left.\frac{{\partial z}}{{\partial x}}\right|_{{(x, y) = ({x_val}, {y_val})}} = {dz_dx_val}")
+st.latex(rf"\left.\frac{{\partial z}}{{\partial y}}\right|_{{(x, y) = ({x_val}, {y_val})}} = {dz_dy_val}")
+
+st.markdown("---")
+# Gaussian bump example
+st.markdown("**Example 2: Gaussian Bump**")
+
+st.latex(r"z = \exp\left(-\frac{x^2 + y^2}{2 \times 5^2}\right)")
+
+st.code(
+    '''import sympy as sp
+
+x, y = sp.symbols('x y')
+sigma = 5
+z = sp.exp(-(x**2 + y**2) / (2 * sigma**2))
+
+dz_dx = sp.diff(z, x)
+dz_dy = sp.diff(z, y)
+
+# Evaluate at (x, y) = (1, -2)
+dz_dx_val = dz_dx.subs({x: 1, y: -2})
+dz_dy_val = dz_dy.subs({x: 1, y: -2})
+''', language="python"
+)
+
+sigma_val = 5
+xg_val, yg_val = 1, -2
+x_sym, y_sym = sp.symbols('x y')
+z_gauss = sp.exp(-(x_sym**2 + y_sym**2) / (2 * sigma_val**2))
+dz_dx_gauss = sp.diff(z_gauss, x_sym)
+dz_dy_gauss = sp.diff(z_gauss, y_sym)
+dz_dxg_val = dz_dx_gauss.subs({x_sym: xg_val, y_sym: yg_val}).evalf()
+dz_dyg_val = dz_dy_gauss.subs({x_sym: xg_val, y_sym: yg_val}).evalf()
+
+st.latex(r"z = \exp\left(-\frac{x^2 + y^2}{2 \times 5^2}\right)")
+st.latex(r"\frac{\partial z}{\partial x} = " + sp.latex(dz_dx_gauss))
+st.latex(r"\frac{\partial z}{\partial y} = " + sp.latex(dz_dy_gauss))
+st.markdown(f"At $x={xg_val}$, $y={yg_val}$, $\\sigma=5$:")
+st.latex(rf"\left.\frac{{\partial z}}{{\partial x}}\right|_{{(x, y) = ({xg_val}, {yg_val})}} = {dz_dxg_val:.4f}")
+st.latex(rf"\left.\frac{{\partial z}}{{\partial y}}\right|_{{(x, y) = ({xg_val}, {yg_val})}} = {dz_dyg_val:.4f}")
+
+
+
 st.markdown("---")
 st.header("Homework")
 
